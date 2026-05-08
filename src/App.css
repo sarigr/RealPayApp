@@ -293,6 +293,16 @@ button:disabled {
   gap: 10px;
 }
 
+.dashboard-debt-summary {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: #e5e7eb;
+  background: #111827;
+  border: 1px solid #374151;
+  line-height: 1.45;
+}
+
 .dashboard-metric-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

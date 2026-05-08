@@ -55,8 +55,8 @@ function App() {
       .filter((debt) => debt.person_key === 'sofia')
       .reduce((sum, debt) => sum + Number(debt.amount), 0);
 
-    const finalThanasisDebt = baseThanasisDebt + extraThanasisDebt;
-    const finalSofiaDebt = baseSofiaDebt + extraSofiaDebt;
+    const finalThanasisDebt = baseThanasisDebt + extraThanasisDebt - extraSofiaDebt;
+    const finalSofiaDebt = baseSofiaDebt + extraSofiaDebt - extraThanasisDebt;
 
     const personalThanasisTotal = personalExpenses
       .filter((expense) => expense.person_key === 'thanasis')

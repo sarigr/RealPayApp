@@ -28,6 +28,20 @@ function DashboardMetricRow({ label, value, showDebtColor = false }: DashboardMe
   );
 }
 
+function getDebtSummaryMessage(finalThanasisDebt: number) {
+  const absoluteDebt = Math.abs(finalThanasisDebt);
+
+  if (finalThanasisDebt > 0.01) {
+    return `Ο Θανάσης χρωστάει στη Σοφία ${formatMoney(absoluteDebt)}.`;
+  }
+
+  if (finalThanasisDebt < -0.01) {
+    return `Η Σοφία χρωστάει στον Θανάση ${formatMoney(absoluteDebt)}.`;
+  }
+
+  return 'Τα χρέη είναι ισορροπημένα. Κανείς δεν χρωστάει κανέναν.';
+}
+
 export function DashboardSection({ totals }: DashboardSectionProps) {
   return (
     <section className="dashboard-section">
@@ -49,6 +63,10 @@ export function DashboardSection({ totals }: DashboardSectionProps) {
           <div className="dashboard-group-header">
             <h2>Χρέη</h2>
           </div>
+
+          <p className="dashboard-debt-summary">
+            {getDebtSummaryMessage(totals.finalThanasisDebt)}
+          </p>
 
           <div className="dashboard-metric-list">
             <DashboardMetricRow
