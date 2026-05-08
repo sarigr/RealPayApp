@@ -155,39 +155,23 @@ export function CategoriesSection({
     setMessage('Η προσωπική κατηγορία διαγράφηκε.');
   }
 
-  function renderSharedCategoryRows(categories: SharedCategory[]) {
+  function renderCategoryItems(
+    categories: Array<{ id: string; name: string }>,
+    onDelete: (categoryId: string) => void,
+    emptyText: string
+  ) {
     if (categories.length === 0) {
-      return <p className="empty-text">Δεν υπάρχουν κοινές κατηγορίες.</p>;
+      return <p className="empty-text">{emptyText}</p>;
     }
 
     return categories.map((category) => (
-      <div className="category-row-fixed" key={category.id}>
-        <span>{category.name}</span>
+      <div className="category-item" key={category.id}>
+        <span className="category-name">{category.name}</span>
 
         <button
           type="button"
-          className="danger-button"
-          onClick={() => handleDeleteSharedCategory(category.id)}
-        >
-          Διαγραφή
-        </button>
-      </div>
-    ));
-  }
-
-  function renderPersonalCategoryRows(categories: PersonalCategory[]) {
-    if (categories.length === 0) {
-      return <p className="empty-text">Δεν υπάρχουν προσωπικές κατηγορίες.</p>;
-    }
-
-    return categories.map((category) => (
-      <div className="category-row-fixed" key={category.id}>
-        <span>{category.name}</span>
-
-        <button
-          type="button"
-          className="danger-button"
-          onClick={() => handleDeletePersonalCategory(category.id)}
+          className="danger-button category-delete-button"
+          onClick={() => onDelete(category.id)}
         >
           Διαγραφή
         </button>
@@ -196,91 +180,117 @@ export function CategoriesSection({
   }
 
   return (
-    <section className="categories-wide-section bottom-grid">
-      <section className="card compact-form-card">
-        <h2 className="compact-form-title">Κατηγορίες</h2>
+    <section className="categories-section">
+      <header className="card categories-header-card">
+        <h2>Κατηγορίες</h2>
+        <p>Διαχείριση κοινών και προσωπικών κατηγοριών εξόδων.</p>
+      </header>
 
-        <form onSubmit={handleAddSharedCategory} className="form compact-form">
-          <div className="compact-form-grid compact-category-grid compact-category-grid-shared">
-            <label>
-              Νέα κοινή κατηγορία
-              <input
-                type="text"
-                value={newSharedCategory}
-                onChange={(event) => setNewSharedCategory(event.target.value)}
-                placeholder="π.χ. Φαρμακείο, Delivery, Δώρα"
-              />
-            </label>
+      <div className="categories-form-grid">
+        <section className="card category-form-card">
+          <h3>Νέα κοινή κατηγορία</h3>
 
-            <div className="compact-form-actions">
+          <form onSubmit={handleAddSharedCategory} className="form compact-form">
+            <div className="category-form-row">
+              <label>
+                Όνομα κατηγορίας
+                <input
+                  type="text"
+                  value={newSharedCategory}
+                  onChange={(event) => setNewSharedCategory(event.target.value)}
+                  placeholder="π.χ. Φαρμακείο, Delivery, Δώρα"
+                />
+              </label>
+
               <button type="submit" disabled={savingSharedCategory}>
-                {savingSharedCategory ? 'Προσθήκη...' : 'Προσθήκη κοινής κατηγορίας'}
+                {savingSharedCategory ? 'Προσθήκη...' : 'Προσθήκη'}
               </button>
             </div>
-          </div>
-        </form>
+          </form>
+        </section>
 
-        <hr className="soft-divider" />
+        <section className="card category-form-card">
+          <h3>Νέα προσωπική κατηγορία</h3>
 
-        <form onSubmit={handleAddPersonalCategory} className="form compact-form">
-          <div className="compact-form-grid compact-category-grid">
-            <label>
-              Άτομο
-              <select
-                value={personalCategoryPerson}
-                onChange={(event) => setPersonalCategoryPerson(event.target.value as PersonKey)}
-              >
-                <option value="thanasis">Θανάσης</option>
-                <option value="sofia">Σοφία</option>
-              </select>
-            </label>
+          <form onSubmit={handleAddPersonalCategory} className="form compact-form">
+            <div className="category-form-row category-form-row-personal">
+              <label>
+                Άτομο
+                <select
+                  value={personalCategoryPerson}
+                  onChange={(event) => setPersonalCategoryPerson(event.target.value as PersonKey)}
+                >
+                  <option value="thanasis">Θανάσης</option>
+                  <option value="sofia">Σοφία</option>
+                </select>
+              </label>
 
-            <label>
-              Νέα προσωπική κατηγορία
-              <input
-                type="text"
-                value={newPersonalCategory}
-                onChange={(event) => setNewPersonalCategory(event.target.value)}
-                placeholder="π.χ. Hobby, Μαθήματα, Περιποίηση"
-              />
-            </label>
+              <label>
+                Όνομα κατηγορίας
+                <input
+                  type="text"
+                  value={newPersonalCategory}
+                  onChange={(event) => setNewPersonalCategory(event.target.value)}
+                  placeholder="π.χ. Hobby, Μαθήματα, Περιποίηση"
+                />
+              </label>
 
-            <div className="compact-form-actions">
               <button type="submit" disabled={savingPersonalCategory}>
-                {savingPersonalCategory ? 'Προσθήκη...' : 'Προσθήκη προσωπικής κατηγορίας'}
+                {savingPersonalCategory ? 'Προσθήκη...' : 'Προσθήκη'}
               </button>
             </div>
-          </div>
-        </form>
-      </section>
+          </form>
+        </section>
+      </div>
 
-      <section className="card table-card">
-        <div className="section-title">
+      <section className="card categories-lists-card">
+        <div className="categories-lists-header">
           <h2>Πίνακες κατηγοριών</h2>
           <span>{sharedCategories.length + personalCategories.length} κατηγορίες</span>
         </div>
 
-        <div className="category-grid-fixed">
-          <div className="category-panel-fixed">
-            <h3>Κοινές</h3>
-            <div className="category-rows-fixed">
-              {renderSharedCategoryRows(sharedCategories)}
+        <div className="categories-lists-grid">
+          <article className="category-list-card">
+            <div className="category-list-header">
+              <h3>Κοινές</h3>
+              <span className="category-count">{sharedCategories.length}</span>
             </div>
-          </div>
+            <div className="category-items">
+              {renderCategoryItems(
+                sharedCategories,
+                handleDeleteSharedCategory,
+                'Δεν υπάρχουν κοινές κατηγορίες.'
+              )}
+            </div>
+          </article>
 
-          <div className="category-panel-fixed">
-            <h3>{formatPerson('thanasis')}</h3>
-            <div className="category-rows-fixed">
-              {renderPersonalCategoryRows(thanasisCategories)}
+          <article className="category-list-card">
+            <div className="category-list-header">
+              <h3>{formatPerson('thanasis')}</h3>
+              <span className="category-count">{thanasisCategories.length}</span>
             </div>
-          </div>
+            <div className="category-items">
+              {renderCategoryItems(
+                thanasisCategories,
+                handleDeletePersonalCategory,
+                'Δεν υπάρχουν προσωπικές κατηγορίες.'
+              )}
+            </div>
+          </article>
 
-          <div className="category-panel-fixed">
-            <h3>{formatPerson('sofia')}</h3>
-            <div className="category-rows-fixed">
-              {renderPersonalCategoryRows(sofiaCategories)}
+          <article className="category-list-card">
+            <div className="category-list-header">
+              <h3>{formatPerson('sofia')}</h3>
+              <span className="category-count">{sofiaCategories.length}</span>
             </div>
-          </div>
+            <div className="category-items">
+              {renderCategoryItems(
+                sofiaCategories,
+                handleDeletePersonalCategory,
+                'Δεν υπάρχουν προσωπικές κατηγορίες.'
+              )}
+            </div>
+          </article>
         </div>
       </section>
     </section>
