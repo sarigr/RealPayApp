@@ -258,110 +258,67 @@ button:disabled {
 .dashboard-section {
   width: min(1280px, 100%);
   margin: 0 auto;
+}
+
+.dashboard-groups {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
+  align-items: start;
 }
 
-.dashboard-section .stats-grid {
-  width: 100%;
-  margin: 0;
-}
-
-.settlement-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: center;
-  padding: 28px;
-  border-radius: 20px;
-  background: #172033;
-  border: 1px solid #93c5fd;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(191, 219, 254, 0.12);
-}
-
-.settlement-card h2 {
-  margin: 0 0 8px;
-  color: #f9fafb;
-  font-size: 24px;
-}
-
-.settlement-card p {
-  margin: 0;
-  color: #d1d5db;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.settlement-main {
-  display: inline-flex;
-  margin-bottom: 10px;
-  color: #bfdbfe;
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-.settlement-amount {
-  min-width: 180px;
-  padding: 20px 22px;
+.dashboard-group-card {
+  min-width: 0;
+  padding: 22px;
   border-radius: 18px;
-  color: #111827;
-  background: #93c5fd;
-  font-size: 38px;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.dashboard-explanation {
-  display: grid;
-  gap: 18px;
-  padding: 24px;
-  border-radius: 20px;
   background: #1f2937;
   border: 1px solid #374151;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
-.dashboard-explanation h2 {
+.dashboard-group-header {
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #374151;
+}
+
+.dashboard-group-header h2 {
   margin: 0;
-}
-
-.dashboard-explanation p {
-  max-width: 820px;
-  margin: 0;
-  color: #d1d5db;
-  line-height: 1.6;
-}
-
-.mini-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.mini-summary-item {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-  padding: 16px;
-  border-radius: 16px;
-  background: #111827;
-  border: 1px solid #374151;
-}
-
-.mini-summary-item span {
-  color: #d1d5db;
-  font-size: 14px;
-}
-
-.mini-summary-item strong {
   color: #f9fafb;
-  font-size: 20px;
-  overflow-wrap: anywhere;
+  font-size: 22px;
+}
+
+.dashboard-metric-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-metric-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.72);
+}
+
+.dashboard-metric-row:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-metric-label {
+  min-width: 0;
+  color: #d1d5db;
+  line-height: 1.35;
+}
+
+.dashboard-metric-value {
+  color: #f9fafb;
+  font-size: 18px;
+  line-height: 1.15;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .debt-positive {
@@ -603,8 +560,8 @@ td {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .mini-summary-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .dashboard-groups {
+    grid-template-columns: 1fr;
   }
 
   .layout-grid {
@@ -677,23 +634,17 @@ td {
     padding: 16px;
   }
 
-  .settlement-card {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-
-  .settlement-amount {
-    width: 100%;
-    min-width: 0;
-    font-size: 34px;
-  }
-
-  .mini-summary-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-explanation {
+  .dashboard-group-card {
     padding: 18px;
+  }
+
+  .dashboard-metric-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .dashboard-metric-value {
+    text-align: left;
   }
 
   .filters-grid,

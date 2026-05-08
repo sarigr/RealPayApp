@@ -1,88 +1,100 @@
 import type { Totals } from '../types';
 import { formatMoney } from '../utils/helpers';
-import { StatsGrid } from './StatsGrid';
 
 type DashboardSectionProps = {
   totals: Totals;
 };
 
-function getSettlementInfo(totals: Totals) {
-  const difference = totals.finalThanasisDebt - totals.finalSofiaDebt;
+type DashboardMetricRowProps = {
+  label: string;
+  value: number;
+  showDebtColor?: boolean;
+};
 
-  if (Math.abs(difference) < 0.01) {
-    return {
-      title: 'Τα τελικά χρέη είναι ισορροπημένα.',
-      message: 'Δεν χρειάζεται διακανονισμός αυτή τη στιγμή.',
-      amount: 0,
-    };
-  }
+function getDebtClass(value: number) {
+  if (value > 0) return ' debt-positive';
+  if (value < 0) return ' debt-negative';
+  return '';
+}
 
-  if (difference > 0) {
-    const amount = difference / 2;
+function DashboardMetricRow({ label, value, showDebtColor = false }: DashboardMetricRowProps) {
+  const valueClassName = `dashboard-metric-value${showDebtColor ? getDebtClass(value) : ''}`;
 
-    return {
-      title: 'Ο Θανάσης έχει μεγαλύτερο τελικό χρέος.',
-      message: `Ο Θανάσης πρέπει να δώσει ${formatMoney(amount)} στη Σοφία.`,
-      amount,
-    };
-  }
-
-  const amount = Math.abs(difference) / 2;
-
-  return {
-    title: 'Η Σοφία έχει μεγαλύτερο τελικό χρέος.',
-    message: `Η Σοφία πρέπει να δώσει ${formatMoney(amount)} στον Θανάση.`,
-    amount,
-  };
+  return (
+    <div className="dashboard-metric-row">
+      <span className="dashboard-metric-label">{label}</span>
+      <strong className={valueClassName}>{formatMoney(value)}</strong>
+    </div>
+  );
 }
 
 export function DashboardSection({ totals }: DashboardSectionProps) {
-  const settlement = getSettlementInfo(totals);
-
   return (
     <section className="dashboard-section">
-      <StatsGrid totals={totals} />
-
-      <section className="settlement-card">
-        <div>
-          <span className="settlement-main">Διακανονισμός</span>
-          <h2>{settlement.title}</h2>
-          <p>{settlement.message}</p>
-        </div>
-
-        <strong className="settlement-amount">{formatMoney(settlement.amount)}</strong>
-      </section>
-
-      <section className="dashboard-explanation">
-        <h2>Πώς διαβάζονται οι αριθμοί</h2>
-        <p>
-          Τα κοινά έξοδα μοιράζονται στη μέση. Από εκεί αφαιρείται ό,τι έχει ήδη
-          πληρώσει ο καθένας και μετά προστίθενται τα έξτρα χρέη. Ο διακανονισμός
-          είναι η μισή διαφορά ανάμεσα στα δύο τελικά χρέη.
-        </p>
-
-        <div className="mini-summary-grid">
-          <div className="mini-summary-item">
-            <span>Κοινά έξοδα</span>
-            <strong>{formatMoney(totals.totalAll)}</strong>
+      <div className="dashboard-groups">
+        <section className="dashboard-group-card">
+          <div className="dashboard-group-header">
+            <h2>Κοινά έξοδα</h2>
           </div>
 
-          <div className="mini-summary-item">
-            <span>Δίκαιο μερίδιο</span>
-            <strong>{formatMoney(totals.fairShare)}</strong>
+          <div className="dashboard-metric-list">
+            <DashboardMetricRow label="Σύνολο κοινών εξόδων" value={totals.totalAll} />
+            <DashboardMetricRow label="Δίκαιο μερίδιο καθενός" value={totals.fairShare} />
+            <DashboardMetricRow label="Πλήρωσε Θανάσης" value={totals.totalThanasis} />
+            <DashboardMetricRow label="Πλήρωσε Σοφία" value={totals.totalSofia} />
+          </div>
+        </section>
+
+        <section className="dashboard-group-card">
+          <div className="dashboard-group-header">
+            <h2>Χρέη</h2>
           </div>
 
-          <div className="mini-summary-item">
-            <span>Τελικό χρέος Θανάση</span>
-            <strong>{formatMoney(totals.finalThanasisDebt)}</strong>
+          <div className="dashboard-metric-list">
+            <DashboardMetricRow
+              label="Χρέος Θανάση από κοινά"
+              value={totals.baseThanasisDebt}
+              showDebtColor
+            />
+            <DashboardMetricRow
+              label="Χρέος Σοφίας από κοινά"
+              value={totals.baseSofiaDebt}
+              showDebtColor
+            />
+            <DashboardMetricRow
+              label="Έξτρα χρέος Θανάση"
+              value={totals.extraThanasisDebt}
+              showDebtColor
+            />
+            <DashboardMetricRow
+              label="Έξτρα χρέος Σοφίας"
+              value={totals.extraSofiaDebt}
+              showDebtColor
+            />
+            <DashboardMetricRow
+              label="Τελικό χρέος Θανάση"
+              value={totals.finalThanasisDebt}
+              showDebtColor
+            />
+            <DashboardMetricRow
+              label="Τελικό χρέος Σοφίας"
+              value={totals.finalSofiaDebt}
+              showDebtColor
+            />
+          </div>
+        </section>
+
+        <section className="dashboard-group-card">
+          <div className="dashboard-group-header">
+            <h2>Προσωπικά έξοδα</h2>
           </div>
 
-          <div className="mini-summary-item">
-            <span>Τελικό χρέος Σοφίας</span>
-            <strong>{formatMoney(totals.finalSofiaDebt)}</strong>
+          <div className="dashboard-metric-list">
+            <DashboardMetricRow label="Προσωπικά Θανάση" value={totals.personalThanasisTotal} />
+            <DashboardMetricRow label="Προσωπικά Σοφίας" value={totals.personalSofiaTotal} />
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </section>
   );
 }
