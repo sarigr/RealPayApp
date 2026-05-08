@@ -1,16 +1,17 @@
 import { useMemo, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { supabase } from '../lib/supabase';
-import type { HouseholdInfo, PersonKey, SharedCategory } from '../types';
+import type { HouseholdInfo, PersonKey, PersonalCategory, SharedCategory } from '../types';
 
 type ImportDataSectionProps = {
   householdInfo: HouseholdInfo | null;
   sharedCategories: SharedCategory[];
+  personalCategories: PersonalCategory[];
   onDataChanged: () => Promise<void>;
   setMessage: (message: string) => void;
 };
 
-type ImportRowType = 'shared' | 'extra';
+type ImportRowType = 'shared' | 'extra' | 'personal';
 
 type ImportRow = {
   rowNumber: number;
@@ -24,6 +25,11 @@ type ImportRow = {
 };
 
 type ExtraImportDebt = {
+  personKey: PersonKey;
+  amount: number;
+};
+
+type PersonalImportExpense = {
   personKey: PersonKey;
   amount: number;
 };
@@ -130,6 +136,20 @@ function getExtraImportDebt(row: ImportRow): ExtraImportDebt | null {
   return null;
 }
 
+function getPersonalImportExpenses(row: ImportRow): PersonalImportExpense[] {
+  const expenses: PersonalImportExpense[] = [];
+
+  if (row.thanasisAmount > 0) {
+    expenses.push({ personKey: 'thanasis', amount: row.thanasisAmount });
+  }
+
+  if (row.sofiaAmount > 0) {
+    expenses.push({ personKey: 'sofia', amount: row.sofiaAmount });
+  }
+
+  return expenses;
+}
+
 function buildImportRows(text: string) {
   const csvRows = parseCsv(text);
 
@@ -166,7 +186,7 @@ function buildImportRows(text: string) {
     const thanasisAmount = parseAmount(getValue(csvRow, 'thanasis_amount'));
     const sofiaAmount = parseAmount(getValue(csvRow, 'sofia_amount'));
     const rowType: ImportRowType | '' =
-      rawType === 'shared' || rawType === 'extra' ? rawType : '';
+      rawType === 'shared' || rawType === 'extra' || rawType === 'personal' ? rawType : '';
 
     if (!date) {
       errors.push('Λείπει ημερομηνία.');
@@ -175,7 +195,7 @@ function buildImportRows(text: string) {
     }
 
     if (!rowType) {
-      errors.push('Το type πρέπει να είναι shared ή extra.');
+      errors.push('Το type πρέπει να είναι shared, extra ή personal.');
     }
 
     if (thanasisAmount === null) {
@@ -207,6 +227,20 @@ function buildImportRows(text: string) {
       }
     }
 
+    if (rowType === 'personal') {
+      if (!category) {
+        importRow.errors.push('Η personal εγγραφή χρειάζεται category.');
+      }
+
+      if (importRow.thanasisAmount < 0 || importRow.sofiaAmount < 0) {
+        importRow.errors.push('Η personal εγγραφή δεν μπορεί να έχει αρνητικά ποσά.');
+      }
+
+      if (getPersonalImportExpenses(importRow).length === 0) {
+        importRow.errors.push('Η personal εγγραφή χρειάζεται ποσό στον Θανάση ή στη Σοφία.');
+      }
+    }
+
     if (rowType === 'extra' && !getExtraImportDebt(importRow)) {
       importRow.errors.push(
         'Η extra εγγραφή θέλει ποσό μόνο στη μία πλευρά ή θετικό ποσό στη μία και αρνητικό στην άλλη.'
@@ -222,6 +256,7 @@ function buildImportRows(text: string) {
 export function ImportDataSection({
   householdInfo,
   sharedCategories,
+  personalCategories,
   onDataChanged,
   setMessage,
 }: ImportDataSectionProps) {
@@ -237,12 +272,19 @@ export function ImportDataSection({
     const invalidRows = importRows.filter((row) => row.errors.length > 0);
     const sharedRows = validRows.filter((row) => row.type === 'shared');
     const extraRows = validRows.filter((row) => row.type === 'extra');
+    const personalRows = validRows.filter((row) => row.type === 'personal');
+    const personalExpenseCount = personalRows.reduce(
+      (count, row) => count + getPersonalImportExpenses(row).length,
+      0
+    );
 
     return {
       validRows,
       invalidRows,
       sharedRows,
       extraRows,
+      personalRows,
+      personalExpenseCount,
     };
   }, [importRows]);
 
@@ -293,6 +335,37 @@ export function ImportDataSection({
     return data.id as string;
   }
 
+  async function getPersonalCategoryId(
+    categoryName: string,
+    personKey: PersonKey,
+    categoryMap: Map<string, string>
+  ) {
+    const categoryKey = `${personKey}:${normalizeCategoryName(categoryName)}`;
+    const existingCategoryId = categoryMap.get(categoryKey);
+
+    if (existingCategoryId) {
+      return existingCategoryId;
+    }
+
+    const { data, error } = await supabase
+      .from('personal_categories')
+      .insert({
+        household_id: householdInfo!.household_id,
+        person_key: personKey,
+        name: categoryName,
+      })
+      .select('id, name')
+      .single();
+
+    if (error || !data) {
+      throw new Error(error?.message ?? `Δεν δημιουργήθηκε η προσωπική κατηγορία ${categoryName}.`);
+    }
+
+    categoryMap.set(categoryKey, data.id as string);
+
+    return data.id as string;
+  }
+
   async function handleImport() {
     if (!householdInfo) {
       setMessage('Δεν βρέθηκε household για import.');
@@ -310,6 +383,12 @@ export function ImportDataSection({
     try {
       const categoryMap = new Map(
         sharedCategories.map((category) => [normalizeCategoryName(category.name), category.id])
+      );
+      const personalCategoryMap = new Map(
+        personalCategories.map((category) => [
+          `${category.person_key}:${normalizeCategoryName(category.name)}`,
+          category.id,
+        ])
       );
 
       const sharedRowsToInsert = [];
@@ -339,6 +418,27 @@ export function ImportDataSection({
         };
       });
 
+      const personalRowsToInsert = [];
+
+      for (const row of preview.personalRows) {
+        for (const expense of getPersonalImportExpenses(row)) {
+          const categoryId = await getPersonalCategoryId(
+            row.category,
+            expense.personKey,
+            personalCategoryMap
+          );
+
+          personalRowsToInsert.push({
+            household_id: householdInfo.household_id,
+            person_key: expense.personKey,
+            expense_date: row.date,
+            category_id: categoryId,
+            amount: expense.amount,
+            note: row.note || null,
+          });
+        }
+      }
+
       if (sharedRowsToInsert.length > 0) {
         const { error } = await supabase.from('shared_expenses').insert(sharedRowsToInsert);
 
@@ -355,9 +455,17 @@ export function ImportDataSection({
         }
       }
 
+      if (personalRowsToInsert.length > 0) {
+        const { error } = await supabase.from('personal_expenses').insert(personalRowsToInsert);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+      }
+
       await onDataChanged();
 
-      const successMessage = `Το import ολοκληρώθηκε: ${sharedRowsToInsert.length} κοινά έξοδα και ${extraRowsToInsert.length} έξτρα χρέη.`;
+      const successMessage = `Το import ολοκληρώθηκε: ${sharedRowsToInsert.length} κοινά έξοδα, ${extraRowsToInsert.length} έξτρα χρέη και ${personalRowsToInsert.length} προσωπικά έξοδα.`;
       setImportCompleted(true);
       setImportResult(successMessage);
       setMessage(successMessage);
@@ -412,6 +520,10 @@ export function ImportDataSection({
             <div className="import-preview-item">
               <span>Extra εγγραφές</span>
               <strong>{preview.extraRows.length}</strong>
+            </div>
+            <div className="import-preview-item">
+              <span>Personal εγγραφές</span>
+              <strong>{preview.personalExpenseCount}</strong>
             </div>
             <div className="import-preview-item">
               <span>Προβλήματα</span>

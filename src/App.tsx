@@ -305,7 +305,9 @@ function App() {
 
     await Promise.all([
       loadSharedCategories(householdInfo.household_id),
+      loadPersonalCategories(householdInfo.household_id),
       loadSharedExpenses(householdInfo.household_id),
+      loadPersonalExpenses(householdInfo.household_id),
       loadExtraDebts(householdInfo.household_id),
     ]);
   }

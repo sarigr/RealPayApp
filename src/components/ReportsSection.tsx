@@ -247,6 +247,7 @@ export function ReportsSection({
       <ImportDataSection
         householdInfo={householdInfo}
         sharedCategories={sharedCategories}
+        personalCategories={personalCategories}
         onDataChanged={onDataChanged}
         setMessage={setMessage}
       />
