@@ -17,13 +17,13 @@ type SharedExpensesSectionProps = {
 type SharedFilters = {
   month: string;
   categoryId: string;
-  note: string;
+  search: string;
 };
 
 const defaultSharedFilters: SharedFilters = {
   month: '',
-  categoryId: '',
-  note: '',
+  categoryId: 'all',
+  search: '',
 };
 
 function isSharedFilters(value: unknown): value is SharedFilters {
@@ -36,7 +36,7 @@ function isSharedFilters(value: unknown): value is SharedFilters {
   return (
     typeof filters.month === 'string' &&
     typeof filters.categoryId === 'string' &&
-    typeof filters.note === 'string'
+    typeof filters.search === 'string'
   );
 }
 
@@ -59,20 +59,20 @@ export function SharedExpensesSection({
     defaultSharedFilters,
     isSharedFilters
   );
-  const { month: filterMonth, categoryId: filterCategoryId, note: filterNote } = filters;
+  const { month: filterMonth, categoryId: filterCategoryId, search: filterSearch } = filters;
 
   const filteredSharedExpenses = useMemo(() => {
-    const noteQuery = filterNote.trim().toLocaleLowerCase('el-GR');
+    const noteQuery = filterSearch.trim().toLocaleLowerCase('el-GR');
 
     return sharedExpenses.filter((expense) => {
       const matchesMonth = !filterMonth || expense.expense_date.slice(0, 7) === filterMonth;
-      const matchesCategory = !filterCategoryId || expense.category_id === filterCategoryId;
+      const matchesCategory = filterCategoryId === 'all' || expense.category_id === filterCategoryId;
       const noteText = (expense.note ?? '').toLocaleLowerCase('el-GR');
       const matchesNote = !noteQuery || noteText.includes(noteQuery);
 
       return matchesMonth && matchesCategory && matchesNote;
     });
-  }, [filterCategoryId, filterMonth, filterNote, sharedExpenses]);
+  }, [filterCategoryId, filterMonth, filterSearch, sharedExpenses]);
 
   const filteredSharedTotals = useMemo(() => {
     const filteredTotalAll = filteredSharedExpenses.reduce(
@@ -303,7 +303,7 @@ export function SharedExpensesSection({
                   }))
                 }
               >
-                <option value="">Όλες οι κατηγορίες</option>
+                <option value="all">Όλες οι κατηγορίες</option>
                 {sharedCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -316,11 +316,11 @@ export function SharedExpensesSection({
               Αναζήτηση σημείωσης
               <input
                 type="text"
-                value={filterNote}
+                value={filterSearch}
                 onChange={(event) =>
                   setFilters((currentFilters) => ({
                     ...currentFilters,
-                    note: event.target.value,
+                    search: event.target.value,
                   }))
                 }
                 placeholder="π.χ. ΔΕΗ, βενζίνη"

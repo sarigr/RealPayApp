@@ -18,13 +18,13 @@ type DebtPersonFilter = PersonKey | 'all';
 type ExtraDebtFilters = {
   month: string;
   person: DebtPersonFilter;
-  reason: string;
+  search: string;
 };
 
 const defaultExtraDebtFilters: ExtraDebtFilters = {
   month: '',
   person: 'all',
-  reason: '',
+  search: '',
 };
 
 function isDebtPersonFilter(value: unknown): value is DebtPersonFilter {
@@ -41,7 +41,7 @@ function isExtraDebtFilters(value: unknown): value is ExtraDebtFilters {
   return (
     typeof filters.month === 'string' &&
     isDebtPersonFilter(filters.person) &&
-    typeof filters.reason === 'string'
+    typeof filters.search === 'string'
   );
 }
 
@@ -68,10 +68,10 @@ export function ExtraDebtsSection({
     defaultExtraDebtFilters,
     isExtraDebtFilters
   );
-  const { month: filterMonth, person: filterPerson, reason: filterReason } = filters;
+  const { month: filterMonth, person: filterPerson, search: filterSearch } = filters;
 
   const filteredExtraDebts = useMemo(() => {
-    const reasonQuery = filterReason.trim().toLocaleLowerCase('el-GR');
+    const reasonQuery = filterSearch.trim().toLocaleLowerCase('el-GR');
 
     return extraDebts.filter((debt) => {
       const matchesMonth = !filterMonth || debt.debt_date.slice(0, 7) === filterMonth;
@@ -81,7 +81,7 @@ export function ExtraDebtsSection({
 
       return matchesMonth && matchesPerson && matchesReason;
     });
-  }, [extraDebts, filterMonth, filterPerson, filterReason]);
+  }, [extraDebts, filterMonth, filterPerson, filterSearch]);
 
   const filteredExtraTotals = useMemo(() => {
     const filteredExtraThanasisTotal = filteredExtraDebts
@@ -277,11 +277,11 @@ export function ExtraDebtsSection({
               Αναζήτηση αιτίας
               <input
                 type="text"
-                value={filterReason}
+                value={filterSearch}
                 onChange={(event) =>
                   setFilters((currentFilters) => ({
                     ...currentFilters,
-                    reason: event.target.value,
+                    search: event.target.value,
                   }))
                 }
                 placeholder="π.χ. μετρητά, επιστροφή"

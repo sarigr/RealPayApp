@@ -26,8 +26,20 @@ import './App.css';
 
 const themeStorageKey = 'realpayapp-theme';
 const activeTabStorageKey = 'realpayapp-active-tab';
+const dataCacheStorageKey = 'realpayapp-data-cache';
 const appThemes: AppTheme[] = ['dark', 'light', 'starwars', 'lotr'];
 const appTabs: AppTab[] = ['dashboard', 'shared', 'personal', 'categories', 'reports'];
+
+type AppDataCache = {
+  userId: string;
+  householdId: string;
+  savedAt: number;
+  sharedCategories: SharedCategory[];
+  personalCategories: PersonalCategory[];
+  sharedExpenses: SharedExpense[];
+  personalExpenses: PersonalExpense[];
+  extraDebts: ExtraDebt[];
+};
 
 function isAppTheme(value: string | null): value is AppTheme {
   return value !== null && appThemes.includes(value as AppTheme);
@@ -43,6 +55,57 @@ function getInitialTheme(): AppTheme {
     return isAppTheme(storedTheme) ? storedTheme : 'dark';
   } catch {
     return 'dark';
+  }
+}
+
+function isAppDataCache(value: unknown): value is AppDataCache {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const cache = value as Record<string, unknown>;
+
+  return (
+    typeof cache.userId === 'string' &&
+    typeof cache.householdId === 'string' &&
+    typeof cache.savedAt === 'number' &&
+    Array.isArray(cache.sharedCategories) &&
+    Array.isArray(cache.personalCategories) &&
+    Array.isArray(cache.sharedExpenses) &&
+    Array.isArray(cache.personalExpenses) &&
+    Array.isArray(cache.extraDebts)
+  );
+}
+
+function readAppDataCache(userId: string, householdId: string) {
+  try {
+    const storedCache = window.localStorage.getItem(dataCacheStorageKey);
+
+    if (!storedCache) {
+      return null;
+    }
+
+    const parsedCache: unknown = JSON.parse(storedCache);
+
+    if (!isAppDataCache(parsedCache)) {
+      return null;
+    }
+
+    if (parsedCache.userId !== userId || parsedCache.householdId !== householdId) {
+      return null;
+    }
+
+    return parsedCache;
+  } catch {
+    return null;
+  }
+}
+
+function saveAppDataCache(cache: AppDataCache) {
+  try {
+    window.localStorage.setItem(dataCacheStorageKey, JSON.stringify(cache));
+  } catch {
+    // Cache persistence is best-effort and intentionally local to this browser.
   }
 }
 
@@ -175,13 +238,49 @@ function App() {
     const currentHousehold = memberData as HouseholdInfo;
     setHouseholdInfo(currentHousehold);
 
-    await Promise.all([
+    const cachedData = readAppDataCache(userId, currentHousehold.household_id);
+
+    if (cachedData) {
+      setSharedCategories(cachedData.sharedCategories);
+      setPersonalCategories(cachedData.personalCategories);
+      setSharedExpenses(cachedData.sharedExpenses);
+      setPersonalExpenses(cachedData.personalExpenses);
+      setExtraDebts(cachedData.extraDebts);
+      setAppLoading(false);
+    }
+
+    const [
+      nextSharedCategories,
+      nextPersonalCategories,
+      nextSharedExpenses,
+      nextPersonalExpenses,
+      nextExtraDebts,
+    ] = await Promise.all([
       loadSharedCategories(currentHousehold.household_id),
       loadPersonalCategories(currentHousehold.household_id),
       loadSharedExpenses(currentHousehold.household_id),
       loadPersonalExpenses(currentHousehold.household_id),
       loadExtraDebts(currentHousehold.household_id),
     ]);
+
+    if (
+      nextSharedCategories &&
+      nextPersonalCategories &&
+      nextSharedExpenses &&
+      nextPersonalExpenses &&
+      nextExtraDebts
+    ) {
+      saveAppDataCache({
+        userId,
+        householdId: currentHousehold.household_id,
+        savedAt: Date.now(),
+        sharedCategories: nextSharedCategories,
+        personalCategories: nextPersonalCategories,
+        sharedExpenses: nextSharedExpenses,
+        personalExpenses: nextPersonalExpenses,
+        extraDebts: nextExtraDebts,
+      });
+    }
 
     setAppLoading(false);
   }
@@ -195,10 +294,13 @@ function App() {
 
     if (error) {
       setMessage(`Σφάλμα φόρτωσης κοινών κατηγοριών: ${error.message}`);
-      return;
+      return null;
     }
 
-    setSharedCategories((data ?? []) as SharedCategory[]);
+    const nextSharedCategories = (data ?? []) as SharedCategory[];
+    setSharedCategories(nextSharedCategories);
+
+    return nextSharedCategories;
   }
 
   async function loadPersonalCategories(householdId: string) {
@@ -211,10 +313,13 @@ function App() {
 
     if (error) {
       setMessage(`Σφάλμα φόρτωσης προσωπικών κατηγοριών: ${error.message}`);
-      return;
+      return null;
     }
 
-    setPersonalCategories((data ?? []) as PersonalCategory[]);
+    const nextPersonalCategories = (data ?? []) as PersonalCategory[];
+    setPersonalCategories(nextPersonalCategories);
+
+    return nextPersonalCategories;
   }
 
   async function loadSharedExpenses(householdId: string) {
@@ -238,10 +343,13 @@ function App() {
 
     if (error) {
       setMessage(`Σφάλμα φόρτωσης κοινών εξόδων: ${error.message}`);
-      return;
+      return null;
     }
 
-    setSharedExpenses((data ?? []) as unknown as SharedExpense[]);
+    const nextSharedExpenses = (data ?? []) as unknown as SharedExpense[];
+    setSharedExpenses(nextSharedExpenses);
+
+    return nextSharedExpenses;
   }
 
   async function loadPersonalExpenses(householdId: string) {
@@ -265,10 +373,13 @@ function App() {
 
     if (error) {
       setMessage(`Σφάλμα φόρτωσης προσωπικών εξόδων: ${error.message}`);
-      return;
+      return null;
     }
 
-    setPersonalExpenses((data ?? []) as unknown as PersonalExpense[]);
+    const nextPersonalExpenses = (data ?? []) as unknown as PersonalExpense[];
+    setPersonalExpenses(nextPersonalExpenses);
+
+    return nextPersonalExpenses;
   }
 
   async function loadExtraDebts(householdId: string) {
@@ -281,46 +392,108 @@ function App() {
 
     if (error) {
       setMessage(`Σφάλμα φόρτωσης έξτρα χρεών: ${error.message}`);
-      return;
+      return null;
     }
 
-    setExtraDebts((data ?? []) as ExtraDebt[]);
+    const nextExtraDebts = (data ?? []) as ExtraDebt[];
+    setExtraDebts(nextExtraDebts);
+
+    return nextExtraDebts;
+  }
+
+  function saveCurrentAppDataCache(
+    overrides: Partial<Omit<AppDataCache, 'userId' | 'householdId' | 'savedAt'>> = {}
+  ) {
+    if (!session?.user.id || !householdInfo) return;
+
+    saveAppDataCache({
+      userId: session.user.id,
+      householdId: householdInfo.household_id,
+      savedAt: Date.now(),
+      sharedCategories,
+      personalCategories,
+      sharedExpenses,
+      personalExpenses,
+      extraDebts,
+      ...overrides,
+    });
   }
 
   async function reloadSharedExpenses() {
     if (!householdInfo) return;
-    await loadSharedExpenses(householdInfo.household_id);
+    const nextSharedExpenses = await loadSharedExpenses(householdInfo.household_id);
+
+    if (nextSharedExpenses) {
+      saveCurrentAppDataCache({ sharedExpenses: nextSharedExpenses });
+    }
   }
 
   async function reloadExtraDebts() {
     if (!householdInfo) return;
-    await loadExtraDebts(householdInfo.household_id);
+    const nextExtraDebts = await loadExtraDebts(householdInfo.household_id);
+
+    if (nextExtraDebts) {
+      saveCurrentAppDataCache({ extraDebts: nextExtraDebts });
+    }
   }
 
   async function reloadPersonalExpenses() {
     if (!householdInfo) return;
-    await loadPersonalExpenses(householdInfo.household_id);
+    const nextPersonalExpenses = await loadPersonalExpenses(householdInfo.household_id);
+
+    if (nextPersonalExpenses) {
+      saveCurrentAppDataCache({ personalExpenses: nextPersonalExpenses });
+    }
   }
 
   async function reloadCategories() {
     if (!householdInfo) return;
 
-    await Promise.all([
+    const [nextSharedCategories, nextPersonalCategories] = await Promise.all([
       loadSharedCategories(householdInfo.household_id),
       loadPersonalCategories(householdInfo.household_id),
     ]);
+
+    if (nextSharedCategories && nextPersonalCategories) {
+      saveCurrentAppDataCache({
+        sharedCategories: nextSharedCategories,
+        personalCategories: nextPersonalCategories,
+      });
+    }
   }
 
   async function reloadImportedData() {
     if (!householdInfo) return;
 
-    await Promise.all([
+    const [
+      nextSharedCategories,
+      nextPersonalCategories,
+      nextSharedExpenses,
+      nextPersonalExpenses,
+      nextExtraDebts,
+    ] = await Promise.all([
       loadSharedCategories(householdInfo.household_id),
       loadPersonalCategories(householdInfo.household_id),
       loadSharedExpenses(householdInfo.household_id),
       loadPersonalExpenses(householdInfo.household_id),
       loadExtraDebts(householdInfo.household_id),
     ]);
+
+    if (
+      nextSharedCategories &&
+      nextPersonalCategories &&
+      nextSharedExpenses &&
+      nextPersonalExpenses &&
+      nextExtraDebts
+    ) {
+      saveCurrentAppDataCache({
+        sharedCategories: nextSharedCategories,
+        personalCategories: nextPersonalCategories,
+        sharedExpenses: nextSharedExpenses,
+        personalExpenses: nextPersonalExpenses,
+        extraDebts: nextExtraDebts,
+      });
+    }
   }
 
   async function handleLogout() {

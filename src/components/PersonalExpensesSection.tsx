@@ -20,14 +20,14 @@ type PersonalFilters = {
   month: string;
   person: PersonalPersonFilter;
   categoryId: string;
-  note: string;
+  search: string;
 };
 
 const defaultPersonalFilters: PersonalFilters = {
   month: '',
   person: 'all',
-  categoryId: '',
-  note: '',
+  categoryId: 'all',
+  search: '',
 };
 
 function isPersonalPersonFilter(value: unknown): value is PersonalPersonFilter {
@@ -45,7 +45,7 @@ function isPersonalFilters(value: unknown): value is PersonalFilters {
     typeof filters.month === 'string' &&
     isPersonalPersonFilter(filters.person) &&
     typeof filters.categoryId === 'string' &&
-    typeof filters.note === 'string'
+    typeof filters.search === 'string'
   );
 }
 
@@ -72,7 +72,7 @@ export function PersonalExpensesSection({
     month: filterMonth,
     person: filterPerson,
     categoryId: filterCategoryId,
-    note: filterNote,
+    search: filterSearch,
   } = filters;
 
   const filteredCategories = useMemo(() => {
@@ -88,18 +88,18 @@ export function PersonalExpensesSection({
   }, [filterPerson, personalCategories]);
 
   const filteredPersonalExpenses = useMemo(() => {
-    const noteQuery = filterNote.trim().toLocaleLowerCase('el-GR');
+    const noteQuery = filterSearch.trim().toLocaleLowerCase('el-GR');
 
     return personalExpenses.filter((expense) => {
       const matchesMonth = !filterMonth || expense.expense_date.slice(0, 7) === filterMonth;
       const matchesPerson = filterPerson === 'all' || expense.person_key === filterPerson;
-      const matchesCategory = !filterCategoryId || expense.category_id === filterCategoryId;
+      const matchesCategory = filterCategoryId === 'all' || expense.category_id === filterCategoryId;
       const noteText = (expense.note ?? '').toLocaleLowerCase('el-GR');
       const matchesNote = !noteQuery || noteText.includes(noteQuery);
 
       return matchesMonth && matchesPerson && matchesCategory && matchesNote;
     });
-  }, [filterCategoryId, filterMonth, filterNote, filterPerson, personalExpenses]);
+  }, [filterCategoryId, filterMonth, filterSearch, filterPerson, personalExpenses]);
 
   const filteredPersonalTotals = useMemo(() => {
     const filteredPersonalTotal = filteredPersonalExpenses.reduce(
@@ -317,7 +317,7 @@ export function PersonalExpensesSection({
                   setFilters((currentFilters) => ({
                     ...currentFilters,
                     person: event.target.value as PersonalPersonFilter,
-                    categoryId: '',
+                    categoryId: 'all',
                   }));
                 }}
               >
@@ -338,7 +338,7 @@ export function PersonalExpensesSection({
                   }))
                 }
               >
-                <option value="">Όλες οι κατηγορίες</option>
+                <option value="all">Όλες οι κατηγορίες</option>
                 {filterCategoryOptions.map((category) => (
                   <option key={category.id} value={category.id}>
                     {filterPerson === 'all'
@@ -353,11 +353,11 @@ export function PersonalExpensesSection({
               Αναζήτηση σημείωσης
               <input
                 type="text"
-                value={filterNote}
+                value={filterSearch}
                 onChange={(event) =>
                   setFilters((currentFilters) => ({
                     ...currentFilters,
-                    note: event.target.value,
+                    search: event.target.value,
                   }))
                 }
                 placeholder="π.χ. καφές, ρούχα"
