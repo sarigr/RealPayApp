@@ -14,6 +14,12 @@ type ExtraDebtsSectionProps = {
 
 type DebtPersonFilter = PersonKey | 'all';
 
+function getAmountClass(value: number) {
+  if (value > 0) return ' debt-positive';
+  if (value < 0) return ' debt-negative';
+  return '';
+}
+
 export function ExtraDebtsSection({
   householdInfo,
   extraDebts,
@@ -42,6 +48,21 @@ export function ExtraDebtsSection({
       return matchesMonth && matchesPerson && matchesReason;
     });
   }, [extraDebts, filterMonth, filterPerson, filterReason]);
+
+  const filteredExtraTotals = useMemo(() => {
+    const filteredExtraThanasisTotal = filteredExtraDebts
+      .filter((debt) => debt.person_key === 'thanasis')
+      .reduce((sum, debt) => sum + Number(debt.amount), 0);
+    const filteredExtraSofiaTotal = filteredExtraDebts
+      .filter((debt) => debt.person_key === 'sofia')
+      .reduce((sum, debt) => sum + Number(debt.amount), 0);
+
+    return {
+      filteredExtraThanasisTotal,
+      filteredExtraSofiaTotal,
+      filteredExtraNet: filteredExtraThanasisTotal - filteredExtraSofiaTotal,
+    };
+  }, [filteredExtraDebts]);
 
   async function handleAddExtraDebt(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,8 +140,8 @@ export function ExtraDebtsSection({
   }
 
   return (
-    <section className="layout-grid bottom-grid">
-      <section className="card">
+    <section className="section-flow bottom-grid">
+      <section className="card section-form-card">
         <h2>Νέο έξτρα χρέος</h2>
 
         <form onSubmit={handleAddExtraDebt} className="form">
@@ -180,7 +201,7 @@ export function ExtraDebtsSection({
         </form>
       </section>
 
-      <section className="card table-card">
+      <section className="card table-card section-table-card">
         <div className="section-title">
           <h2>Πίνακας έξτρα χρεών</h2>
           <span>{extraDebts.length} καταχωρήσεις</span>
@@ -226,6 +247,42 @@ export function ExtraDebtsSection({
             </button>
           </div>
         </div>
+
+        <section className="filtered-summary-panel">
+          <h3>Σύνολα φιλτραρισμένων έξτρα χρεών</h3>
+          <div className="filtered-summary-grid">
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Θανάσης</span>
+              <strong
+                className={`filtered-summary-value${getAmountClass(
+                  filteredExtraTotals.filteredExtraThanasisTotal
+                )}`}
+              >
+                {formatMoney(filteredExtraTotals.filteredExtraThanasisTotal)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Σοφία</span>
+              <strong
+                className={`filtered-summary-value${getAmountClass(
+                  filteredExtraTotals.filteredExtraSofiaTotal
+                )}`}
+              >
+                {formatMoney(filteredExtraTotals.filteredExtraSofiaTotal)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Καθαρή διαφορά</span>
+              <strong
+                className={`filtered-summary-value${getAmountClass(
+                  filteredExtraTotals.filteredExtraNet
+                )}`}
+              >
+                {formatMoney(filteredExtraTotals.filteredExtraNet)}
+              </strong>
+            </div>
+          </div>
+        </section>
 
         <div className="table-toolbar">
           <span className="muted-count">

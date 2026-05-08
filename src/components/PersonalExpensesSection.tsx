@@ -60,6 +60,25 @@ export function PersonalExpensesSection({
     });
   }, [filterCategoryId, filterMonth, filterNote, filterPerson, personalExpenses]);
 
+  const filteredPersonalTotals = useMemo(() => {
+    const filteredPersonalTotal = filteredPersonalExpenses.reduce(
+      (sum, expense) => sum + Number(expense.amount),
+      0
+    );
+    const filteredThanasisPersonalTotal = filteredPersonalExpenses
+      .filter((expense) => expense.person_key === 'thanasis')
+      .reduce((sum, expense) => sum + Number(expense.amount), 0);
+    const filteredSofiaPersonalTotal = filteredPersonalExpenses
+      .filter((expense) => expense.person_key === 'sofia')
+      .reduce((sum, expense) => sum + Number(expense.amount), 0);
+
+    return {
+      filteredPersonalTotal,
+      filteredThanasisPersonalTotal,
+      filteredSofiaPersonalTotal,
+    };
+  }, [filteredPersonalExpenses]);
+
   useEffect(() => {
     if (filteredCategories.length > 0) {
       const categoryExists = filteredCategories.some((category) => category.id === categoryId);
@@ -155,8 +174,8 @@ export function PersonalExpensesSection({
   }
 
   return (
-    <section className="layout-grid bottom-grid">
-      <section className="card">
+    <section className="section-flow bottom-grid">
+      <section className="card section-form-card">
         <h2>Νέο προσωπικό έξοδο</h2>
 
         <form onSubmit={handleAddPersonalExpense} className="form">
@@ -226,7 +245,7 @@ export function PersonalExpensesSection({
         </form>
       </section>
 
-      <section className="card table-card">
+      <section className="card table-card section-table-card">
         <div className="section-title">
           <h2>Πίνακας προσωπικών εξόδων</h2>
           <span>{personalExpenses.length} καταχωρήσεις</span>
@@ -292,6 +311,30 @@ export function PersonalExpensesSection({
             </button>
           </div>
         </div>
+
+        <section className="filtered-summary-panel">
+          <h3>Σύνολα φιλτραρισμένων προσωπικών εξόδων</h3>
+          <div className="filtered-summary-grid">
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Σύνολο</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredPersonalTotals.filteredPersonalTotal)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Θανάσης</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredPersonalTotals.filteredThanasisPersonalTotal)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Σοφία</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredPersonalTotals.filteredSofiaPersonalTotal)}
+              </strong>
+            </div>
+          </div>
+        </section>
 
         <div className="table-toolbar">
           <span className="muted-count">

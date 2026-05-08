@@ -44,6 +44,28 @@ export function SharedExpensesSection({
     });
   }, [filterCategoryId, filterMonth, filterNote, sharedExpenses]);
 
+  const filteredSharedTotals = useMemo(() => {
+    const filteredTotalAll = filteredSharedExpenses.reduce(
+      (sum, expense) => sum + Number(expense.total_amount),
+      0
+    );
+    const filteredTotalThanasis = filteredSharedExpenses.reduce(
+      (sum, expense) => sum + Number(expense.thanasis_amount),
+      0
+    );
+    const filteredTotalSofia = filteredSharedExpenses.reduce(
+      (sum, expense) => sum + Number(expense.sofia_amount),
+      0
+    );
+
+    return {
+      filteredTotalAll,
+      filteredTotalThanasis,
+      filteredTotalSofia,
+      filteredFairShare: filteredTotalAll / 2,
+    };
+  }, [filteredSharedExpenses]);
+
   useEffect(() => {
     if (!categoryId && sharedCategories.length > 0) {
       setCategoryId(sharedCategories[0].id);
@@ -139,8 +161,8 @@ export function SharedExpensesSection({
   }
 
   return (
-    <section className="layout-grid">
-      <section className="card">
+    <section className="section-flow">
+      <section className="card section-form-card">
         <h2>Νέο κοινό έξοδο</h2>
 
         <form onSubmit={handleAddSharedExpense} className="form">
@@ -218,7 +240,7 @@ export function SharedExpensesSection({
         </form>
       </section>
 
-      <section className="card table-card">
+      <section className="card table-card section-table-card">
         <div className="section-title">
           <h2>Πίνακας κοινών εξόδων</h2>
           <span>{sharedExpenses.length} καταχωρήσεις</span>
@@ -267,6 +289,36 @@ export function SharedExpensesSection({
             </button>
           </div>
         </div>
+
+        <section className="filtered-summary-panel">
+          <h3>Σύνολα φιλτραρισμένων κοινών εξόδων</h3>
+          <div className="filtered-summary-grid">
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Σύνολο</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredSharedTotals.filteredTotalAll)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Θανάσης</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredSharedTotals.filteredTotalThanasis)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Σοφία</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredSharedTotals.filteredTotalSofia)}
+              </strong>
+            </div>
+            <div className="filtered-summary-item">
+              <span className="filtered-summary-label">Μερίδιο καθενός</span>
+              <strong className="filtered-summary-value">
+                {formatMoney(filteredSharedTotals.filteredFairShare)}
+              </strong>
+            </div>
+          </div>
+        </section>
 
         <div className="table-toolbar">
           <span className="muted-count">
