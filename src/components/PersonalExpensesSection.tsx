@@ -175,73 +175,77 @@ export function PersonalExpensesSection({
 
   return (
     <section className="section-flow bottom-grid">
-      <section className="card section-form-card">
-        <h2>Νέο προσωπικό έξοδο</h2>
+      <section className="card section-form-card compact-form-card">
+        <h2 className="compact-form-title">Νέο προσωπικό έξοδο</h2>
 
-        <form onSubmit={handleAddPersonalExpense} className="form">
-          <label>
-            Ημερομηνία
-            <input
-              type="date"
-              value={expenseDate}
-              onChange={(event) => setExpenseDate(event.target.value)}
-              required
-            />
-          </label>
+        <form onSubmit={handleAddPersonalExpense} className="form compact-form">
+          <div className="compact-form-grid">
+            <label>
+              Ημερομηνία
+              <input
+                type="date"
+                value={expenseDate}
+                onChange={(event) => setExpenseDate(event.target.value)}
+                required
+              />
+            </label>
 
-          <label>
-            Άτομο
-            <select
-              value={person}
-              onChange={(event) => setPerson(event.target.value as PersonKey)}
-              required
-            >
-              <option value="thanasis">Θανάσης</option>
-              <option value="sofia">Σοφία</option>
-            </select>
-          </label>
+            <label>
+              Άτομο
+              <select
+                value={person}
+                onChange={(event) => setPerson(event.target.value as PersonKey)}
+                required
+              >
+                <option value="thanasis">Θανάσης</option>
+                <option value="sofia">Σοφία</option>
+              </select>
+            </label>
 
-          <label>
-            Κατηγορία
-            <select
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-              required
-            >
-              {filteredCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label>
+              Κατηγορία
+              <select
+                value={categoryId}
+                onChange={(event) => setCategoryId(event.target.value)}
+                required
+              >
+                {filteredCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label>
-            Ποσό
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              placeholder="π.χ. 4.50"
-              required
-            />
-          </label>
+            <label>
+              Ποσό
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                placeholder="π.χ. 4.50"
+                required
+              />
+            </label>
 
-          <label>
-            Σημείωση
-            <input
-              type="text"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="π.χ. καφές, ρούχα, μετακίνηση"
-            />
-          </label>
+            <label>
+              Σημείωση
+              <input
+                type="text"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="π.χ. καφές, ρούχα, μετακίνηση"
+              />
+            </label>
 
-          <button type="submit" disabled={savingPersonalExpense || !categoryId}>
-            {savingPersonalExpense ? 'Αποθήκευση...' : 'Αποθήκευση προσωπικού εξόδου'}
-          </button>
+            <div className="compact-form-actions">
+              <button type="submit" disabled={savingPersonalExpense || !categoryId}>
+                {savingPersonalExpense ? 'Αποθήκευση...' : 'Αποθήκευση προσωπικού εξόδου'}
+              </button>
+            </div>
+          </div>
         </form>
       </section>
 

@@ -197,52 +197,60 @@ export function CategoriesSection({
 
   return (
     <section className="categories-wide-section bottom-grid">
-      <section className="card">
-        <h2>Κατηγορίες</h2>
+      <section className="card compact-form-card">
+        <h2 className="compact-form-title">Κατηγορίες</h2>
 
-        <form onSubmit={handleAddSharedCategory} className="form">
-          <label>
-            Νέα κοινή κατηγορία
-            <input
-              type="text"
-              value={newSharedCategory}
-              onChange={(event) => setNewSharedCategory(event.target.value)}
-              placeholder="π.χ. Φαρμακείο, Delivery, Δώρα"
-            />
-          </label>
+        <form onSubmit={handleAddSharedCategory} className="form compact-form">
+          <div className="compact-form-grid compact-category-grid compact-category-grid-shared">
+            <label>
+              Νέα κοινή κατηγορία
+              <input
+                type="text"
+                value={newSharedCategory}
+                onChange={(event) => setNewSharedCategory(event.target.value)}
+                placeholder="π.χ. Φαρμακείο, Delivery, Δώρα"
+              />
+            </label>
 
-          <button type="submit" disabled={savingSharedCategory}>
-            {savingSharedCategory ? 'Προσθήκη...' : 'Προσθήκη κοινής κατηγορίας'}
-          </button>
+            <div className="compact-form-actions">
+              <button type="submit" disabled={savingSharedCategory}>
+                {savingSharedCategory ? 'Προσθήκη...' : 'Προσθήκη κοινής κατηγορίας'}
+              </button>
+            </div>
+          </div>
         </form>
 
         <hr className="soft-divider" />
 
-        <form onSubmit={handleAddPersonalCategory} className="form">
-          <label>
-            Άτομο
-            <select
-              value={personalCategoryPerson}
-              onChange={(event) => setPersonalCategoryPerson(event.target.value as PersonKey)}
-            >
-              <option value="thanasis">Θανάσης</option>
-              <option value="sofia">Σοφία</option>
-            </select>
-          </label>
+        <form onSubmit={handleAddPersonalCategory} className="form compact-form">
+          <div className="compact-form-grid compact-category-grid">
+            <label>
+              Άτομο
+              <select
+                value={personalCategoryPerson}
+                onChange={(event) => setPersonalCategoryPerson(event.target.value as PersonKey)}
+              >
+                <option value="thanasis">Θανάσης</option>
+                <option value="sofia">Σοφία</option>
+              </select>
+            </label>
 
-          <label>
-            Νέα προσωπική κατηγορία
-            <input
-              type="text"
-              value={newPersonalCategory}
-              onChange={(event) => setNewPersonalCategory(event.target.value)}
-              placeholder="π.χ. Hobby, Μαθήματα, Περιποίηση"
-            />
-          </label>
+            <label>
+              Νέα προσωπική κατηγορία
+              <input
+                type="text"
+                value={newPersonalCategory}
+                onChange={(event) => setNewPersonalCategory(event.target.value)}
+                placeholder="π.χ. Hobby, Μαθήματα, Περιποίηση"
+              />
+            </label>
 
-          <button type="submit" disabled={savingPersonalCategory}>
-            {savingPersonalCategory ? 'Προσθήκη...' : 'Προσθήκη προσωπικής κατηγορίας'}
-          </button>
+            <div className="compact-form-actions">
+              <button type="submit" disabled={savingPersonalCategory}>
+                {savingPersonalCategory ? 'Προσθήκη...' : 'Προσθήκη προσωπικής κατηγορίας'}
+              </button>
+            </div>
+          </div>
         </form>
       </section>
 

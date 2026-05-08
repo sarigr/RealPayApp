@@ -162,36 +162,36 @@ export function SharedExpensesSection({
 
   return (
     <section className="section-flow">
-      <section className="card section-form-card">
-        <h2>Νέο κοινό έξοδο</h2>
+      <section className="card section-form-card compact-form-card">
+        <h2 className="compact-form-title">Νέο κοινό έξοδο</h2>
 
-        <form onSubmit={handleAddSharedExpense} className="form">
-          <label>
-            Ημερομηνία
-            <input
-              type="date"
-              value={expenseDate}
-              onChange={(event) => setExpenseDate(event.target.value)}
-              required
-            />
-          </label>
+        <form onSubmit={handleAddSharedExpense} className="form compact-form">
+          <div className="compact-form-grid">
+            <label>
+              Ημερομηνία
+              <input
+                type="date"
+                value={expenseDate}
+                onChange={(event) => setExpenseDate(event.target.value)}
+                required
+              />
+            </label>
 
-          <label>
-            Κατηγορία
-            <select
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-              required
-            >
-              {sharedCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label>
+              Κατηγορία
+              <select
+                value={categoryId}
+                onChange={(event) => setCategoryId(event.target.value)}
+                required
+              >
+                {sharedCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <div className="two-columns">
             <label>
               Θανάσης
               <input
@@ -215,28 +215,30 @@ export function SharedExpensesSection({
                 placeholder="0.00"
               />
             </label>
+
+            <label>
+              Σημείωση
+              <input
+                type="text"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="π.χ. Σκλαβενίτης, ΔΕΗ, βενζίνη"
+              />
+            </label>
+
+            <div className="compact-form-total">
+              Σύνολο φόρμας:{' '}
+              <strong>
+                {formatMoney(Number(thanasisAmount || 0) + Number(sofiaAmount || 0))}
+              </strong>
+            </div>
+
+            <div className="compact-form-actions">
+              <button type="submit" disabled={savingExpense || !categoryId}>
+                {savingExpense ? 'Αποθήκευση...' : 'Αποθήκευση εξόδου'}
+              </button>
+            </div>
           </div>
-
-          <div className="calculated-total">
-            Σύνολο φόρμας:{' '}
-            <strong>
-              {formatMoney(Number(thanasisAmount || 0) + Number(sofiaAmount || 0))}
-            </strong>
-          </div>
-
-          <label>
-            Σημείωση
-            <input
-              type="text"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="π.χ. Σκλαβενίτης, ΔΕΗ, βενζίνη"
-            />
-          </label>
-
-          <button type="submit" disabled={savingExpense || !categoryId}>
-            {savingExpense ? 'Αποθήκευση...' : 'Αποθήκευση εξόδου'}
-          </button>
         </form>
       </section>
 

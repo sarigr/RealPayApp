@@ -141,63 +141,64 @@ export function ExtraDebtsSection({
 
   return (
     <section className="section-flow bottom-grid">
-      <section className="card section-form-card">
-        <h2>Νέο έξτρα χρέος</h2>
+      <section className="card section-form-card compact-form-card">
+        <h2 className="compact-form-title">Νέο έξτρα χρέος</h2>
 
-        <form onSubmit={handleAddExtraDebt} className="form">
-          <label>
-            Ημερομηνία
-            <input
-              type="date"
-              value={debtDate}
-              onChange={(event) => setDebtDate(event.target.value)}
-              required
-            />
-          </label>
+        <form onSubmit={handleAddExtraDebt} className="form compact-form">
+          <div className="compact-form-grid">
+            <label>
+              Ημερομηνία
+              <input
+                type="date"
+                value={debtDate}
+                onChange={(event) => setDebtDate(event.target.value)}
+                required
+              />
+            </label>
 
-          <label>
-            Άτομο
-            <select
-              value={debtPerson}
-              onChange={(event) => setDebtPerson(event.target.value as PersonKey)}
-              required
-            >
-              <option value="thanasis">Θανάσης</option>
-              <option value="sofia">Σοφία</option>
-            </select>
-          </label>
+            <label>
+              Άτομο
+              <select
+                value={debtPerson}
+                onChange={(event) => setDebtPerson(event.target.value as PersonKey)}
+                required
+              >
+                <option value="thanasis">Θανάσης</option>
+                <option value="sofia">Σοφία</option>
+              </select>
+            </label>
 
-          <label>
-            Ποσό
-            <input
-              type="number"
-              step="0.01"
-              value={debtAmount}
-              onChange={(event) => setDebtAmount(event.target.value)}
-              placeholder="π.χ. 15 ή -15"
-              required
-            />
-          </label>
+            <label>
+              Ποσό
+              <input
+                type="number"
+                step="0.01"
+                value={debtAmount}
+                onChange={(event) => setDebtAmount(event.target.value)}
+                placeholder="π.χ. 15 ή -15"
+                required
+              />
+              <span className="compact-form-hint">
+                Θετικό ποσό: χρωστάει παραπάνω. Αρνητικό: πίστωση/έχει βάλει παραπάνω.
+              </span>
+            </label>
 
-          <div className="hint-box">
-            Θετικό ποσό σημαίνει ότι το άτομο χρωστάει παραπάνω.
-            <br />
-            Αρνητικό ποσό σημαίνει ότι έχει πίστωση/έχει βάλει παραπάνω.
+            <label>
+              Αιτία
+              <input
+                type="text"
+                value={debtReason}
+                onChange={(event) => setDebtReason(event.target.value)}
+                placeholder="π.χ. παλιό χρέος, μετρητά, επιστροφή"
+              />
+            </label>
+
+            <div className="compact-form-actions">
+              <button type="submit" disabled={savingDebt}>
+                {savingDebt ? 'Αποθήκευση...' : 'Αποθήκευση έξτρα χρέους'}
+              </button>
+            </div>
           </div>
-
-          <label>
-            Αιτία
-            <input
-              type="text"
-              value={debtReason}
-              onChange={(event) => setDebtReason(event.target.value)}
-              placeholder="π.χ. παλιό χρέος, μετρητά, επιστροφή"
-            />
-          </label>
-
-          <button type="submit" disabled={savingDebt}>
-            {savingDebt ? 'Αποθήκευση...' : 'Αποθήκευση έξτρα χρέους'}
-          </button>
         </form>
       </section>
 

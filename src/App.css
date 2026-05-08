@@ -447,35 +447,86 @@ button:disabled {
 
 .section-form-card {
   width: 100%;
-  max-width: 520px;
+  max-width: none;
 }
 
 .section-table-card {
   width: 100%;
 }
 
-.two-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+.compact-form-card {
+  padding: 18px;
 }
 
-.calculated-total,
-.hint-box {
-  padding: 14px;
-  border-radius: 14px;
+.compact-form-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.compact-form {
+  gap: 12px;
+}
+
+.compact-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.compact-form label {
+  gap: 6px;
+  font-size: 13px;
+}
+
+.compact-form input,
+.compact-form select {
+  padding: 9px 11px;
+  border-radius: 10px;
+}
+
+.compact-form-actions {
+  display: grid;
+  align-self: end;
+}
+
+.compact-form-actions button {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  white-space: normal;
+}
+
+.compact-form-total {
+  align-self: end;
+  min-height: 40px;
+  padding: 9px 11px;
+  border-radius: 10px;
   background: #111827;
   border: 1px solid #374151;
   color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
-.calculated-total strong {
+.compact-form-total strong {
   color: #bfdbfe;
 }
 
-.hint-box {
-  font-size: 14px;
-  line-height: 1.5;
+.compact-form-hint {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.compact-category-grid {
+  grid-template-columns: minmax(150px, 0.75fr) minmax(220px, 1.4fr) minmax(170px, 0.65fr);
+}
+
+.compact-category-grid-shared {
+  grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.32fr);
 }
 
 .table-card {
@@ -841,13 +892,33 @@ td {
     max-width: none;
   }
 
+  .compact-form-card {
+    padding: 16px;
+  }
+
+  .compact-form-title {
+    margin-bottom: 12px;
+    font-size: 19px;
+  }
+
+  .compact-form-grid,
+  .compact-category-grid,
+  .compact-category-grid-shared {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-form input,
+  .compact-form select {
+    padding: 10px 12px;
+  }
+
+  .compact-form-total {
+    min-height: auto;
+  }
+
   .form button,
   .secondary-button {
     width: 100%;
-  }
-
-  .two-columns {
-    grid-template-columns: 1fr;
   }
 
   .data-table-wrapper {
