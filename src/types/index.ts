@@ -2,6 +2,8 @@ export type PersonKey = 'thanasis' | 'sofia';
 
 export type AppTab = 'dashboard' | 'shared' | 'personal' | 'categories' | 'reports';
 
+export type AppTheme = 'dark' | 'light' | 'starwars' | 'lotr';
+
 export type MoneyValue = number | string;
 
 export type HouseholdInfo = {

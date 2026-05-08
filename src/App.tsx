@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import type {
   AppTab,
+  AppTheme,
   ExtraDebt,
   HouseholdInfo,
   PersonalCategory,
@@ -22,9 +23,26 @@ import { ReportsSection } from './components/ReportsSection';
 import { AppNavigation } from './components/AppNavigation';
 import './App.css';
 
+const themeStorageKey = 'realpayapp-theme';
+const appThemes: AppTheme[] = ['dark', 'light', 'starwars', 'lotr'];
+
+function isAppTheme(value: string | null): value is AppTheme {
+  return value !== null && appThemes.includes(value as AppTheme);
+}
+
+function getInitialTheme(): AppTheme {
+  try {
+    const storedTheme = window.localStorage.getItem(themeStorageKey);
+    return isAppTheme(storedTheme) ? storedTheme : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
+  const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
 
   const [loading, setLoading] = useState(true);
   const [appLoading, setAppLoading] = useState(false);
@@ -81,6 +99,15 @@ function App() {
       personalSofiaTotal,
     };
   }, [sharedExpenses, extraDebts, personalExpenses]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(themeStorageKey, theme);
+      document.documentElement.dataset.theme = theme;
+    } catch {
+      // Theme persistence is best-effort and intentionally local to this browser.
+    }
+  }, [theme]);
 
   useEffect(() => {
     async function loadSession() {
@@ -280,7 +307,7 @@ function App() {
 
   if (loading) {
     return (
-      <main className="page center-page">
+      <main className="page center-page" data-theme={theme}>
         <section className="card small-card">
           <h1>RealPayApp</h1>
           <p>Φόρτωση...</p>
@@ -290,12 +317,17 @@ function App() {
   }
 
   if (!session) {
-    return <LoginPage />;
+    return <LoginPage theme={theme} />;
   }
 
   return (
-    <main className="page">
-      <Topbar email={session.user.email ?? 'Χωρίς email'} onLogout={handleLogout} />
+    <main className="page" data-theme={theme}>
+      <Topbar
+        email={session.user.email ?? 'Χωρίς email'}
+        theme={theme}
+        onThemeChange={setTheme}
+        onLogout={handleLogout}
+      />
 
       <AppNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 

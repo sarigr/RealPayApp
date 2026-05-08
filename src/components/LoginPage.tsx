@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
+import type { AppTheme } from '../types';
 
-export function LoginPage() {
+type LoginPageProps = {
+  theme: AppTheme;
+};
+
+export function LoginPage({ theme }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -32,7 +37,7 @@ export function LoginPage() {
   }
 
   return (
-    <main className="page center-page">
+    <main className="page center-page" data-theme={theme}>
       <section className="card small-card">
         <h1>RealPayApp</h1>
         <p className="subtitle">Σύνδεση με email και password</p>
