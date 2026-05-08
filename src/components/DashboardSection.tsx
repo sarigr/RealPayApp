@@ -42,7 +42,18 @@ function getDebtSummaryMessage(finalThanasisDebt: number) {
   return 'Τα χρέη είναι ισορροπημένα. Κανείς δεν χρωστάει κανέναν.';
 }
 
+function DashboardResultRow({ message }: { message: string }) {
+  return (
+    <div className="dashboard-metric-row">
+      <span className="dashboard-metric-label">Τελικό καθαρό αποτέλεσμα</span>
+      <strong className="dashboard-metric-value dashboard-result-message">{message}</strong>
+    </div>
+  );
+}
+
 export function DashboardSection({ totals }: DashboardSectionProps) {
+  const debtSummaryMessage = getDebtSummaryMessage(totals.finalThanasisDebt);
+
   return (
     <section className="dashboard-section">
       <div className="dashboard-groups">
@@ -64,10 +75,6 @@ export function DashboardSection({ totals }: DashboardSectionProps) {
             <h2>Χρέη</h2>
           </div>
 
-          <p className="dashboard-debt-summary">
-            {getDebtSummaryMessage(totals.finalThanasisDebt)}
-          </p>
-
           <div className="dashboard-metric-list">
             <DashboardMetricRow
               label="Χρέος Θανάση από κοινά"
@@ -79,26 +86,7 @@ export function DashboardSection({ totals }: DashboardSectionProps) {
               value={totals.baseSofiaDebt}
               showDebtColor
             />
-            <DashboardMetricRow
-              label="Έξτρα χρέος Θανάση"
-              value={totals.extraThanasisDebt}
-              showDebtColor
-            />
-            <DashboardMetricRow
-              label="Έξτρα χρέος Σοφίας"
-              value={totals.extraSofiaDebt}
-              showDebtColor
-            />
-            <DashboardMetricRow
-              label="Τελικό χρέος Θανάση"
-              value={totals.finalThanasisDebt}
-              showDebtColor
-            />
-            <DashboardMetricRow
-              label="Τελικό χρέος Σοφίας"
-              value={totals.finalSofiaDebt}
-              showDebtColor
-            />
+            <DashboardResultRow message={debtSummaryMessage} />
           </div>
         </section>
 
