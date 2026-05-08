@@ -268,6 +268,18 @@ select {
   border: 1px solid var(--border-color);
 }
 
+.tab-panel {
+  width: 100%;
+}
+
+.tab-panel.hidden {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
 .nav-tab {
   border: 1px solid var(--border-color);
   border-radius: 10px;

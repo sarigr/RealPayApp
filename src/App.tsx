@@ -24,10 +24,16 @@ import { AppNavigation } from './components/AppNavigation';
 import './App.css';
 
 const themeStorageKey = 'realpayapp-theme';
+const activeTabStorageKey = 'realpayapp-active-tab';
 const appThemes: AppTheme[] = ['dark', 'light', 'starwars', 'lotr'];
+const appTabs: AppTab[] = ['dashboard', 'shared', 'personal', 'categories', 'reports'];
 
 function isAppTheme(value: string | null): value is AppTheme {
   return value !== null && appThemes.includes(value as AppTheme);
+}
+
+function isAppTab(value: string | null): value is AppTab {
+  return value !== null && appTabs.includes(value as AppTab);
 }
 
 function getInitialTheme(): AppTheme {
@@ -39,9 +45,18 @@ function getInitialTheme(): AppTheme {
   }
 }
 
+function getInitialActiveTab(): AppTab {
+  try {
+    const storedTab = window.localStorage.getItem(activeTabStorageKey);
+    return isAppTab(storedTab) ? storedTab : 'dashboard';
+  } catch {
+    return 'dashboard';
+  }
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(null);
-  const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<AppTab>(getInitialActiveTab);
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
 
   const [loading, setLoading] = useState(true);
@@ -108,6 +123,14 @@ function App() {
       // Theme persistence is best-effort and intentionally local to this browser.
     }
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(activeTabStorageKey, activeTab);
+    } catch {
+      // Active tab persistence is best-effort and intentionally local to this browser.
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     async function loadSession() {
@@ -351,30 +374,28 @@ function App() {
         </section>
       ) : (
         <>
-          {activeTab === 'dashboard' && (
+          <div className={`tab-panel ${activeTab === 'dashboard' ? 'active' : 'hidden'}`}>
             <DashboardSection totals={totals} />
-          )}
+          </div>
 
-          {activeTab === 'shared' && (
-            <>
-              <SharedExpensesSection
-                householdInfo={householdInfo}
-                sharedCategories={sharedCategories}
-                sharedExpenses={sharedExpenses}
-                onDataChanged={reloadSharedExpenses}
-                setMessage={setMessage}
-              />
+          <div className={`tab-panel ${activeTab === 'shared' ? 'active' : 'hidden'}`}>
+            <SharedExpensesSection
+              householdInfo={householdInfo}
+              sharedCategories={sharedCategories}
+              sharedExpenses={sharedExpenses}
+              onDataChanged={reloadSharedExpenses}
+              setMessage={setMessage}
+            />
 
-              <ExtraDebtsSection
-                householdInfo={householdInfo}
-                extraDebts={extraDebts}
-                onDataChanged={reloadExtraDebts}
-                setMessage={setMessage}
-              />
-            </>
-          )}
+            <ExtraDebtsSection
+              householdInfo={householdInfo}
+              extraDebts={extraDebts}
+              onDataChanged={reloadExtraDebts}
+              setMessage={setMessage}
+            />
+          </div>
 
-          {activeTab === 'personal' && (
+          <div className={`tab-panel ${activeTab === 'personal' ? 'active' : 'hidden'}`}>
             <PersonalExpensesSection
               householdInfo={householdInfo}
               personalCategories={personalCategories}
@@ -382,9 +403,9 @@ function App() {
               onDataChanged={reloadPersonalExpenses}
               setMessage={setMessage}
             />
-          )}
+          </div>
 
-          {activeTab === 'categories' && (
+          <div className={`tab-panel ${activeTab === 'categories' ? 'active' : 'hidden'}`}>
             <CategoriesSection
               householdInfo={householdInfo}
               sharedCategories={sharedCategories}
@@ -392,9 +413,9 @@ function App() {
               onDataChanged={reloadCategories}
               setMessage={setMessage}
             />
-          )}
+          </div>
 
-          {activeTab === 'reports' && (
+          <div className={`tab-panel ${activeTab === 'reports' ? 'active' : 'hidden'}`}>
             <ReportsSection
               householdInfo={householdInfo}
               sharedCategories={sharedCategories}
@@ -404,7 +425,7 @@ function App() {
               onDataChanged={reloadImportedData}
               setMessage={setMessage}
             />
-          )}
+          </div>
         </>
       )}
     </main>
