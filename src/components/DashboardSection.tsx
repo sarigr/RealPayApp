@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Totals } from '../types';
 import { formatMoney } from '../utils/helpers';
 
@@ -9,6 +10,11 @@ type DashboardMetricRowProps = {
   label: string;
   value: number;
   showDebtColor?: boolean;
+};
+
+type DebtDetailRowProps = {
+  label: string;
+  value: number;
 };
 
 function getDebtClass(value: number) {
@@ -28,6 +34,17 @@ function DashboardMetricRow({ label, value, showDebtColor = false }: DashboardMe
   );
 }
 
+function DebtDetailRow({ label, value }: DebtDetailRowProps) {
+  return (
+    <div className="debt-detail-row">
+      <span className="debt-detail-label">{label}</span>
+      <strong className={`debt-detail-value${getDebtClass(value)}`}>
+        {formatMoney(value)}
+      </strong>
+    </div>
+  );
+}
+
 function getDebtSummaryMessage(finalThanasisDebt: number) {
   const absoluteDebt = Math.abs(finalThanasisDebt);
 
@@ -42,17 +59,10 @@ function getDebtSummaryMessage(finalThanasisDebt: number) {
   return 'Τα χρέη είναι ισορροπημένα. Κανείς δεν χρωστάει κανέναν.';
 }
 
-function DashboardResultRow({ message }: { message: string }) {
-  return (
-    <div className="dashboard-metric-row">
-      <span className="dashboard-metric-label">Τελικό καθαρό αποτέλεσμα</span>
-      <strong className="dashboard-metric-value dashboard-result-message">{message}</strong>
-    </div>
-  );
-}
-
 export function DashboardSection({ totals }: DashboardSectionProps) {
+  const [showDebtDetails, setShowDebtDetails] = useState(false);
   const debtSummaryMessage = getDebtSummaryMessage(totals.finalThanasisDebt);
+  const debtResultClassName = `debt-result-amount${getDebtClass(totals.finalThanasisDebt)}`;
 
   return (
     <section className="dashboard-section">
@@ -75,19 +85,51 @@ export function DashboardSection({ totals }: DashboardSectionProps) {
             <h2>Χρέη</h2>
           </div>
 
-          <div className="dashboard-metric-list">
-            <DashboardMetricRow
-              label="Χρέος Θανάση από κοινά"
-              value={totals.baseThanasisDebt}
-              showDebtColor
-            />
-            <DashboardMetricRow
-              label="Χρέος Σοφίας από κοινά"
-              value={totals.baseSofiaDebt}
-              showDebtColor
-            />
-            <DashboardResultRow message={debtSummaryMessage} />
+          <div className="debt-result-card">
+            <div className="debt-result-main">
+              <span>Τελικό καθαρό αποτέλεσμα</span>
+              <strong>{debtSummaryMessage}</strong>
+            </div>
+
+            <strong className={debtResultClassName}>
+              {formatMoney(Math.abs(totals.finalThanasisDebt))}
+            </strong>
           </div>
+
+          <button
+            type="button"
+            className="details-toggle-button"
+            aria-expanded={showDebtDetails}
+            onClick={() => setShowDebtDetails((currentValue) => !currentValue)}
+          >
+            Λεπτομέρειες
+          </button>
+
+          {showDebtDetails && (
+            <div className="debt-details-panel">
+              <DebtDetailRow label="Χρέος Θανάση από κοινά" value={totals.baseThanasisDebt} />
+              <DebtDetailRow label="Χρέος Σοφίας από κοινά" value={totals.baseSofiaDebt} />
+              <DebtDetailRow label="Έξτρα χρέος Θανάση" value={totals.extraThanasisDebt} />
+              <DebtDetailRow label="Έξτρα χρέος Σοφίας" value={totals.extraSofiaDebt} />
+              <DebtDetailRow
+                label="Τελικό καθαρό χρέος Θανάση"
+                value={totals.finalThanasisDebt}
+              />
+              <DebtDetailRow
+                label="Τελικό καθαρό χρέος Σοφίας"
+                value={totals.finalSofiaDebt}
+              />
+
+              <p className="debt-details-note">
+                Το τελικό καθαρό αποτέλεσμα προκύπτει με συμψηφισμό των κοινών εξόδων
+                και των έξτρα χρεών.
+              </p>
+              <p className="debt-details-note">
+                Θετικό ποσό στον Θανάση σημαίνει ότι ο Θανάσης χρωστάει στη Σοφία.
+                Αρνητικό ποσό σημαίνει ότι η Σοφία χρωστάει στον Θανάση.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="dashboard-group-card">

@@ -321,14 +321,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-.dashboard-result-message {
-  max-width: 260px;
-  color: #e5e7eb;
-  font-size: 15px;
-  line-height: 1.35;
-  white-space: normal;
-}
-
 .debt-positive {
   color: #fca5a5;
   font-weight: 800;
@@ -337,6 +329,100 @@ button:disabled {
 .debt-negative {
   color: #86efac;
   font-weight: 800;
+}
+
+.debt-result-card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: #111827;
+  border: 1px solid #374151;
+}
+
+.debt-result-main {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.debt-result-main span {
+  color: #bfdbfe;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.debt-result-main strong {
+  color: #f9fafb;
+  font-size: 18px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.debt-result-amount {
+  color: #f9fafb;
+  font-size: 30px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.details-toggle-button {
+  min-height: 36px;
+  margin-top: 14px;
+  padding: 7px 11px;
+  color: #bfdbfe;
+  background: #172033;
+  border: 1px solid #374151;
+  font-size: 14px;
+}
+
+.details-toggle-button:hover {
+  color: #f9fafb;
+  background: #263244;
+}
+
+.debt-details-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid #374151;
+}
+
+.debt-detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(55, 65, 81, 0.72);
+}
+
+.debt-detail-row:last-of-type {
+  border-bottom: 0;
+}
+
+.debt-detail-label {
+  color: #d1d5db;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.debt-detail-value {
+  color: #f9fafb;
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.debt-details-note {
+  margin: 6px 0 0;
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .layout-grid {
@@ -652,6 +738,19 @@ td {
   }
 
   .dashboard-metric-value {
+    text-align: left;
+  }
+
+  .debt-result-amount {
+    font-size: 28px;
+  }
+
+  .debt-detail-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .debt-detail-value {
     text-align: left;
   }
 
