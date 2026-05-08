@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { HouseholdInfo, PersonKey, PersonalCategory, PersonalExpense } from '../types';
 import { exportPersonalExpensesToCsv } from '../utils/csv';
 import { formatMoney, formatPerson, getTodayDate } from '../utils/helpers';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 type PersonalExpensesSectionProps = {
   householdInfo: HouseholdInfo | null;
@@ -14,6 +15,39 @@ type PersonalExpensesSectionProps = {
 };
 
 type PersonalPersonFilter = PersonKey | 'all';
+
+type PersonalFilters = {
+  month: string;
+  person: PersonalPersonFilter;
+  categoryId: string;
+  note: string;
+};
+
+const defaultPersonalFilters: PersonalFilters = {
+  month: '',
+  person: 'all',
+  categoryId: '',
+  note: '',
+};
+
+function isPersonalPersonFilter(value: unknown): value is PersonalPersonFilter {
+  return value === 'all' || value === 'thanasis' || value === 'sofia';
+}
+
+function isPersonalFilters(value: unknown): value is PersonalFilters {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const filters = value as Record<string, unknown>;
+
+  return (
+    typeof filters.month === 'string' &&
+    isPersonalPersonFilter(filters.person) &&
+    typeof filters.categoryId === 'string' &&
+    typeof filters.note === 'string'
+  );
+}
 
 export function PersonalExpensesSection({
   householdInfo,
@@ -29,10 +63,17 @@ export function PersonalExpensesSection({
   const [categoryId, setCategoryId] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
-  const [filterPerson, setFilterPerson] = useState<PersonalPersonFilter>('all');
-  const [filterCategoryId, setFilterCategoryId] = useState('');
-  const [filterNote, setFilterNote] = useState('');
+  const [filters, setFilters] = usePersistentState<PersonalFilters>(
+    'realpayapp-filters-personal',
+    defaultPersonalFilters,
+    isPersonalFilters
+  );
+  const {
+    month: filterMonth,
+    person: filterPerson,
+    categoryId: filterCategoryId,
+    note: filterNote,
+  } = filters;
 
   const filteredCategories = useMemo(() => {
     return personalCategories.filter((category) => category.person_key === person);
@@ -167,10 +208,7 @@ export function PersonalExpensesSection({
   }
 
   function clearFilters() {
-    setFilterMonth('');
-    setFilterPerson('all');
-    setFilterCategoryId('');
-    setFilterNote('');
+    setFilters(defaultPersonalFilters);
   }
 
   return (
@@ -262,7 +300,12 @@ export function PersonalExpensesSection({
               <input
                 type="month"
                 value={filterMonth}
-                onChange={(event) => setFilterMonth(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    month: event.target.value,
+                  }))
+                }
               />
             </label>
 
@@ -271,8 +314,11 @@ export function PersonalExpensesSection({
               <select
                 value={filterPerson}
                 onChange={(event) => {
-                  setFilterPerson(event.target.value as PersonalPersonFilter);
-                  setFilterCategoryId('');
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    person: event.target.value as PersonalPersonFilter,
+                    categoryId: '',
+                  }));
                 }}
               >
                 <option value="all">Όλοι</option>
@@ -285,7 +331,12 @@ export function PersonalExpensesSection({
               Κατηγορία
               <select
                 value={filterCategoryId}
-                onChange={(event) => setFilterCategoryId(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    categoryId: event.target.value,
+                  }))
+                }
               >
                 <option value="">Όλες οι κατηγορίες</option>
                 {filterCategoryOptions.map((category) => (
@@ -303,7 +354,12 @@ export function PersonalExpensesSection({
               <input
                 type="text"
                 value={filterNote}
-                onChange={(event) => setFilterNote(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    note: event.target.value,
+                  }))
+                }
                 placeholder="π.χ. καφές, ρούχα"
               />
             </label>

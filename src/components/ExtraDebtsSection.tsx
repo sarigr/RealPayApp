@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { ExtraDebt, HouseholdInfo, PersonKey } from '../types';
 import { exportExtraDebtsToCsv } from '../utils/csv';
 import { formatMoney, formatPerson, getTodayDate } from '../utils/helpers';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 type ExtraDebtsSectionProps = {
   householdInfo: HouseholdInfo | null;
@@ -13,6 +14,36 @@ type ExtraDebtsSectionProps = {
 };
 
 type DebtPersonFilter = PersonKey | 'all';
+
+type ExtraDebtFilters = {
+  month: string;
+  person: DebtPersonFilter;
+  reason: string;
+};
+
+const defaultExtraDebtFilters: ExtraDebtFilters = {
+  month: '',
+  person: 'all',
+  reason: '',
+};
+
+function isDebtPersonFilter(value: unknown): value is DebtPersonFilter {
+  return value === 'all' || value === 'thanasis' || value === 'sofia';
+}
+
+function isExtraDebtFilters(value: unknown): value is ExtraDebtFilters {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const filters = value as Record<string, unknown>;
+
+  return (
+    typeof filters.month === 'string' &&
+    isDebtPersonFilter(filters.person) &&
+    typeof filters.reason === 'string'
+  );
+}
 
 function getAmountClass(value: number) {
   if (value > 0) return ' debt-positive';
@@ -32,9 +63,12 @@ export function ExtraDebtsSection({
   const [debtPerson, setDebtPerson] = useState<PersonKey>('thanasis');
   const [debtAmount, setDebtAmount] = useState('');
   const [debtReason, setDebtReason] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
-  const [filterPerson, setFilterPerson] = useState<DebtPersonFilter>('all');
-  const [filterReason, setFilterReason] = useState('');
+  const [filters, setFilters] = usePersistentState<ExtraDebtFilters>(
+    'realpayapp-filters-extra-debts',
+    defaultExtraDebtFilters,
+    isExtraDebtFilters
+  );
+  const { month: filterMonth, person: filterPerson, reason: filterReason } = filters;
 
   const filteredExtraDebts = useMemo(() => {
     const reasonQuery = filterReason.trim().toLocaleLowerCase('el-GR');
@@ -134,9 +168,7 @@ export function ExtraDebtsSection({
   }
 
   function clearFilters() {
-    setFilterMonth('');
-    setFilterPerson('all');
-    setFilterReason('');
+    setFilters(defaultExtraDebtFilters);
   }
 
   return (
@@ -215,7 +247,12 @@ export function ExtraDebtsSection({
               <input
                 type="month"
                 value={filterMonth}
-                onChange={(event) => setFilterMonth(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    month: event.target.value,
+                  }))
+                }
               />
             </label>
 
@@ -223,7 +260,12 @@ export function ExtraDebtsSection({
               Άτομο
               <select
                 value={filterPerson}
-                onChange={(event) => setFilterPerson(event.target.value as DebtPersonFilter)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    person: event.target.value as DebtPersonFilter,
+                  }))
+                }
               >
                 <option value="all">Όλοι</option>
                 <option value="thanasis">Θανάσης</option>
@@ -236,7 +278,12 @@ export function ExtraDebtsSection({
               <input
                 type="text"
                 value={filterReason}
-                onChange={(event) => setFilterReason(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    reason: event.target.value,
+                  }))
+                }
                 placeholder="π.χ. μετρητά, επιστροφή"
               />
             </label>

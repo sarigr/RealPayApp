@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import type { Totals } from '../types';
 import { formatMoney } from '../utils/helpers';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 type DashboardSectionProps = {
   totals: Totals;
@@ -60,7 +60,11 @@ function getDebtSummaryMessage(finalThanasisDebt: number) {
 }
 
 export function DashboardSection({ totals }: DashboardSectionProps) {
-  const [showDebtDetails, setShowDebtDetails] = useState(false);
+  const [showDebtDetails, setShowDebtDetails] = usePersistentState<boolean>(
+    'realpayapp-dashboard-show-debt-details',
+    false,
+    (value): value is boolean => typeof value === 'boolean'
+  );
   const debtSummaryMessage = getDebtSummaryMessage(totals.finalThanasisDebt);
   const debtResultClassName = `debt-result-amount${getDebtClass(totals.finalThanasisDebt)}`;
 

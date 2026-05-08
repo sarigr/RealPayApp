@@ -21,6 +21,7 @@ import { PersonalExpensesSection } from './components/PersonalExpensesSection';
 import { CategoriesSection } from './components/CategoriesSection';
 import { ReportsSection } from './components/ReportsSection';
 import { AppNavigation } from './components/AppNavigation';
+import { usePersistentState } from './hooks/usePersistentState';
 import './App.css';
 
 const themeStorageKey = 'realpayapp-theme';
@@ -32,8 +33,8 @@ function isAppTheme(value: string | null): value is AppTheme {
   return value !== null && appThemes.includes(value as AppTheme);
 }
 
-function isAppTab(value: string | null): value is AppTab {
-  return value !== null && appTabs.includes(value as AppTab);
+function isAppTab(value: unknown): value is AppTab {
+  return typeof value === 'string' && appTabs.includes(value as AppTab);
 }
 
 function getInitialTheme(): AppTheme {
@@ -45,18 +46,13 @@ function getInitialTheme(): AppTheme {
   }
 }
 
-function getInitialActiveTab(): AppTab {
-  try {
-    const storedTab = window.localStorage.getItem(activeTabStorageKey);
-    return isAppTab(storedTab) ? storedTab : 'dashboard';
-  } catch {
-    return 'dashboard';
-  }
-}
-
 function App() {
   const [session, setSession] = useState<Session | null>(null);
-  const [activeTab, setActiveTab] = useState<AppTab>(getInitialActiveTab);
+  const [activeTab, setActiveTab] = usePersistentState<AppTab>(
+    activeTabStorageKey,
+    'dashboard',
+    isAppTab
+  );
   const [theme, setTheme] = useState<AppTheme>(getInitialTheme);
 
   const [loading, setLoading] = useState(true);
@@ -123,14 +119,6 @@ function App() {
       // Theme persistence is best-effort and intentionally local to this browser.
     }
   }, [theme]);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(activeTabStorageKey, activeTab);
-    } catch {
-      // Active tab persistence is best-effort and intentionally local to this browser.
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     async function loadSession() {

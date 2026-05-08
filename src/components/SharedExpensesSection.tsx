@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { HouseholdInfo, SharedCategory, SharedExpense } from '../types';
 import { exportSharedExpensesToCsv } from '../utils/csv';
 import { formatMoney, getTodayDate } from '../utils/helpers';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 type SharedExpensesSectionProps = {
   householdInfo: HouseholdInfo | null;
@@ -12,6 +13,32 @@ type SharedExpensesSectionProps = {
   onDataChanged: () => Promise<void>;
   setMessage: (message: string) => void;
 };
+
+type SharedFilters = {
+  month: string;
+  categoryId: string;
+  note: string;
+};
+
+const defaultSharedFilters: SharedFilters = {
+  month: '',
+  categoryId: '',
+  note: '',
+};
+
+function isSharedFilters(value: unknown): value is SharedFilters {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const filters = value as Record<string, unknown>;
+
+  return (
+    typeof filters.month === 'string' &&
+    typeof filters.categoryId === 'string' &&
+    typeof filters.note === 'string'
+  );
+}
 
 export function SharedExpensesSection({
   householdInfo,
@@ -27,9 +54,12 @@ export function SharedExpensesSection({
   const [thanasisAmount, setThanasisAmount] = useState('');
   const [sofiaAmount, setSofiaAmount] = useState('');
   const [note, setNote] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
-  const [filterCategoryId, setFilterCategoryId] = useState('');
-  const [filterNote, setFilterNote] = useState('');
+  const [filters, setFilters] = usePersistentState<SharedFilters>(
+    'realpayapp-filters-shared',
+    defaultSharedFilters,
+    isSharedFilters
+  );
+  const { month: filterMonth, categoryId: filterCategoryId, note: filterNote } = filters;
 
   const filteredSharedExpenses = useMemo(() => {
     const noteQuery = filterNote.trim().toLocaleLowerCase('el-GR');
@@ -155,9 +185,7 @@ export function SharedExpensesSection({
   }
 
   function clearFilters() {
-    setFilterMonth('');
-    setFilterCategoryId('');
-    setFilterNote('');
+    setFilters(defaultSharedFilters);
   }
 
   return (
@@ -255,7 +283,12 @@ export function SharedExpensesSection({
               <input
                 type="month"
                 value={filterMonth}
-                onChange={(event) => setFilterMonth(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    month: event.target.value,
+                  }))
+                }
               />
             </label>
 
@@ -263,7 +296,12 @@ export function SharedExpensesSection({
               Κατηγορία
               <select
                 value={filterCategoryId}
-                onChange={(event) => setFilterCategoryId(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    categoryId: event.target.value,
+                  }))
+                }
               >
                 <option value="">Όλες οι κατηγορίες</option>
                 {sharedCategories.map((category) => (
@@ -279,7 +317,12 @@ export function SharedExpensesSection({
               <input
                 type="text"
                 value={filterNote}
-                onChange={(event) => setFilterNote(event.target.value)}
+                onChange={(event) =>
+                  setFilters((currentFilters) => ({
+                    ...currentFilters,
+                    note: event.target.value,
+                  }))
+                }
                 placeholder="π.χ. ΔΕΗ, βενζίνη"
               />
             </label>
