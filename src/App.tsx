@@ -292,13 +292,23 @@ function App() {
   }
 
   async function reloadCategories() {
-  if (!householdInfo) return;
+    if (!householdInfo) return;
 
-  await Promise.all([
-    loadSharedCategories(householdInfo.household_id),
-    loadPersonalCategories(householdInfo.household_id),
-  ]);
-}
+    await Promise.all([
+      loadSharedCategories(householdInfo.household_id),
+      loadPersonalCategories(householdInfo.household_id),
+    ]);
+  }
+
+  async function reloadImportedData() {
+    if (!householdInfo) return;
+
+    await Promise.all([
+      loadSharedCategories(householdInfo.household_id),
+      loadSharedExpenses(householdInfo.household_id),
+      loadExtraDebts(householdInfo.household_id),
+    ]);
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -384,10 +394,13 @@ function App() {
 
           {activeTab === 'reports' && (
             <ReportsSection
+              householdInfo={householdInfo}
               sharedCategories={sharedCategories}
               personalCategories={personalCategories}
               sharedExpenses={sharedExpenses}
               personalExpenses={personalExpenses}
+              onDataChanged={reloadImportedData}
+              setMessage={setMessage}
             />
           )}
         </>

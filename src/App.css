@@ -1357,6 +1357,127 @@ td {
   white-space: nowrap;
 }
 
+.import-section {
+  display: grid;
+  gap: 18px;
+}
+
+.import-header {
+  display: grid;
+  gap: 8px;
+}
+
+.import-header h2 {
+  margin: 0;
+}
+
+.import-header p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.import-upload-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.import-file-input {
+  padding: 10px 12px;
+}
+
+.import-file-name {
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.import-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.import-preview-item {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border-color);
+}
+
+.import-preview-item span {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.import-preview-item strong {
+  color: var(--text-main);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.import-errors {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+}
+
+.import-errors h3 {
+  margin: 0;
+  color: var(--warning);
+  font-size: 16px;
+}
+
+.import-error-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-main);
+}
+
+.import-error-list li {
+  line-height: 1.4;
+}
+
+.import-error-text,
+.import-helper-text,
+.import-result {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.import-error-text {
+  color: var(--warning);
+}
+
+.import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.import-actions button {
+  min-width: 140px;
+}
+
+.import-result {
+  color: var(--success);
+  font-weight: 800;
+}
+
 @media (max-width: 720px) {
   .reports-section {
     gap: 14px;
@@ -1369,5 +1490,18 @@ td {
 
   .report-table {
     min-width: 720px;
+  }
+
+  .import-upload-row,
+  .import-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .import-actions {
+    display: grid;
+  }
+
+  .import-actions button {
+    width: 100%;
   }
 }

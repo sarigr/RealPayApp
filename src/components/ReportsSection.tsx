@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type {
+  HouseholdInfo,
   PersonKey,
   PersonalCategory,
   PersonalExpense,
@@ -7,12 +8,16 @@ import type {
   SharedExpense,
 } from '../types';
 import { formatMoney, formatPerson } from '../utils/helpers';
+import { ImportDataSection } from './ImportDataSection';
 
 type ReportsSectionProps = {
+  householdInfo: HouseholdInfo | null;
   sharedCategories: SharedCategory[];
   personalCategories: PersonalCategory[];
   sharedExpenses: SharedExpense[];
   personalExpenses: PersonalExpense[];
+  onDataChanged: () => Promise<void>;
+  setMessage: (message: string) => void;
 };
 
 type MonthlyReportRow = {
@@ -159,10 +164,13 @@ function ReportTable({
 }
 
 export function ReportsSection({
+  householdInfo,
   sharedCategories,
   personalCategories,
   sharedExpenses,
   personalExpenses,
+  onDataChanged,
+  setMessage,
 }: ReportsSectionProps) {
   const sharedCategoryNames = useMemo(() => {
     const fromCategories = sharedCategories.map((category) => category.name);
@@ -234,6 +242,13 @@ export function ReportsSection({
         title={`Προσωπικά έξοδα ${formatPerson('sofia')}`}
         categoryNames={sofiaCategoryNames}
         rows={sofiaRows}
+      />
+
+      <ImportDataSection
+        householdInfo={householdInfo}
+        sharedCategories={sharedCategories}
+        onDataChanged={onDataChanged}
+        setMessage={setMessage}
       />
     </section>
   );
